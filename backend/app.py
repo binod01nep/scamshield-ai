@@ -56,7 +56,7 @@ Only respond with the JSON. No extra text."""
 })
 
     response = client.invoke_model(
-        modelId="amazon.nova-lite-v1:0",
+       modelId="amazon.nova-lite-v2:0",
         body=body
     )
 
