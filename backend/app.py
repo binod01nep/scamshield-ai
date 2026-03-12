@@ -12,7 +12,7 @@ CORS(app)
 
 client = boto3.client(
     service_name="bedrock-runtime",
-    region_name=os.getenv("AWS_REGION"),
+    region_name="us-east-1",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
 )
@@ -40,29 +40,30 @@ Respond in this exact JSON format:
 Only respond with the JSON. No extra text."""
 
     body = json.dumps({
-    "messages": [
-        {
-            "role": "user",
-            "content": [
-                {
-                    "text": prompt
-                }
-            ]
+        "messages": [
+            {
+                "role": "user",
+                "content": [{"text": prompt}]
+            }
+        ],
+        "inferenceConfig": {
+            "max_new_tokens": 500
         }
-    ],
-    "inferenceConfig": {
-        "max_new_tokens": 500
-    }
-})
+    })
 
     response = client.invoke_model(
-       modelId="amazon.nova-lite-v2:0",
+        modelId="us.amazon.nova-lite-v1:0",
         body=body
     )
 
     response_body = json.loads(response["body"].read())
     result = response_body["output"]["message"]["content"][0]["text"]
-    result_json = json.loads(result)
+    clean = result.strip()
+    if clean.startswith("```"):
+        clean = clean.split("```")[1]
+        if clean.startswith("json"):
+            clean = clean[4:]
+    result_json = json.loads(clean.strip())
 
     return jsonify(result_json)
 
